@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080/invoice-portal/backend/api',
+  baseURL: 'http://invoiceportalapp.infinityfreeapp.com/backend/api',
 
   withCredentials: true,
 

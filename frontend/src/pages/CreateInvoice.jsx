@@ -134,7 +134,7 @@ export default function CreateInvoice() {
         );
 
         await axios.post(
-          'http://localhost:8080/invoice-portal/backend/api/send_invoice_email.php',
+          'http://invoiceportalapp.infinityfreeapp.com/backend/api/send_invoice_email.php',
           {
             client_email: selectedClient.email,
             client_name: selectedClient.name,
