@@ -2,18 +2,19 @@
 
 require_once '../config/db.php';
 
-session_start();
+// session_start();
 
-if (!isset($_SESSION['user_id'])) {
+// if (!isset($_SESSION['user_id'])) {
 
-    http_response_code(401);
+//     http_response_code(401);
 
-    echo json_encode([
-        "error" => "Unauthorized."
-    ]);
+//     echo json_encode([
+//         "error" => "Unauthorized."
+//     ]);
 
-    exit();
-}
+//     exit();
+// }
+require_once '../config/session_check.php';
 
 $user_id = $_SESSION['user_id'];
 
@@ -46,6 +47,14 @@ elseif ($method === 'POST') {
     $amount = $data['amount'] ?? 0;
 
     $payment_date = $data['payment_date'] ?? date('Y-m-d');
+    // Prevent future payment dates
+    if ($payment_date > date('Y-m-d')) {
+        http_response_code(400);
+        echo json_encode([
+            "error" => "Payment date cannot be in the future."
+        ]);
+    exit();
+}
 
     $method_pay = $data['method'] ?? 'Cash';
 
@@ -61,6 +70,82 @@ elseif ($method === 'POST') {
 
         exit();
     }
+    // Check if invoice is already fully paid
+$stmt = $pdo->prepare(
+    "SELECT status
+     FROM invoices
+     WHERE id = ? AND user_id = ?"
+);
+
+$stmt->execute([
+    $invoice_id,
+    $user_id
+]);
+
+$invoiceStatus = $stmt->fetch();
+
+if ($invoiceStatus && $invoiceStatus['status'] === 'Paid') {
+
+    http_response_code(400);
+
+    echo json_encode([
+        "error" => "This invoice has already been fully paid."
+    ]);
+
+    exit();
+}
+
+//ADDING THIS NEW
+// Get invoice total
+$stmtTotal = $pdo->prepare(
+"
+SELECT total
+FROM invoices
+WHERE id = ? AND user_id = ?
+"
+);
+
+$stmtTotal->execute([
+    $invoice_id,
+    $user_id
+]);
+
+$invoice = $stmtTotal->fetch();
+
+
+// Get amount already paid
+$stmtPaid = $pdo->prepare(
+"
+SELECT COALESCE(SUM(amount),0) AS paid
+FROM payments
+WHERE invoice_id = ?
+"
+);
+
+$stmtPaid->execute([
+    $invoice_id
+]);
+
+$totalPaid = $stmtPaid->fetch()['paid'];
+
+
+// Prevent overpayment
+if (($totalPaid + $amount) > $invoice['total']) {
+
+    $remaining =
+        $invoice['total'] - $totalPaid;
+
+    http_response_code(400);
+
+    echo json_encode([
+        "error" =>
+            "Payment exceeds remaining balance. Remaining amount: ₹" .
+            number_format($remaining, 2)
+    ]);
+
+    exit();
+}
+
 
     $stmt = $pdo->prepare(
         "

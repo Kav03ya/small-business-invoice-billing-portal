@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
     exit(0);
 }
+
 // session_start();
 
 // if (!isset($_SESSION['user_id'])) {
@@ -72,55 +73,50 @@ try {
     $mail->isHTML(true);
 
     $mail->Subject =
-        'Invoice Generated - ' .
-        $data['invoice_number'];
+    'Payment Reminder - ' .
+    $data['invoice_number'];
 
     $mail->Body = '
 
-        <h2>Invoice Generated Successfully</h2>
+<h2>Payment Reminder</h2>
 
-        <p>
-            Dear ' . $data['client_name'] . ',
-        </p>
+<p>
+    Dear ' . $data['client_name'] . ',
+</p>
 
-        <p>
-            Your invoice has been generated successfully.
-        </p>
+<p>
+    This is a friendly reminder that the following invoice is overdue.
+</p>
 
-        <hr>
+<hr>
 
-        <p>
-            <strong>Invoice Number:</strong>
-            ' . $data['invoice_number'] . '
-        </p>
+<p>
+    <strong>Invoice Number:</strong>
+    ' . $data['invoice_number'] . '
+</p>
 
-        <p>
-            <strong>Issue Date:</strong>
-            ' . $data['issue_date'] . '
-        </p>
+<p>
+    <strong>Due Date:</strong>
+    ' . $data['due_date'] . '
+</p>
 
-        <p>
-            <strong>Due Date:</strong>
-            ' . $data['due_date'] . '
-        </p>
+<p>
+    <strong>Outstanding Amount:</strong>
+    INR ' . $data['total'] . '
+</p>
 
-        <p>
-            <strong>Total Amount:</strong>
-            INR ' . $data['total'] . '
-        </p>
+<p>
+    We kindly request you to complete the payment at your earliest convenience.
+</p>
 
-        <p>
-            Please ensure timely payment processing.
-        </p>
+<br>
 
-        <br>
-
-        <p>
-            Regards,
-            <br>
-            Invoice Portal
-        </p>
-    ';
+<p>
+    Regards,
+    <br>
+    Invoice Portal
+</p>
+';
 
     $mail->send();
 
@@ -131,7 +127,8 @@ try {
 } catch (Exception $e) {
 
     echo json_encode([
-        "error" => $mail->ErrorInfo
+        "error" => $mail->ErrorInfo,
+        "exception" => $e->getMessage()
     ]);
 }
 ?>

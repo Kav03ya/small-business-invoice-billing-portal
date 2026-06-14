@@ -2,18 +2,19 @@
 
 require_once '../config/db.php';
 
-session_start();
+// session_start();
 
-if (!isset($_SESSION['user_id'])) {
+// if (!isset($_SESSION['user_id'])) {
 
-    http_response_code(401);
+//     http_response_code(401);
 
-    echo json_encode([
-        "error" => "Unauthorized. Please login."
-    ]);
+//     echo json_encode([
+//         "error" => "Unauthorized. Please login."
+//     ]);
 
-    exit();
-}
+//     exit();
+// }
+require_once '../config/session_check.php';
 
 $user_id = $_SESSION['user_id'];
 
@@ -26,7 +27,9 @@ if ($method === 'GET' && !$id) {
     $status = $_GET['status'] ?? '';
 
     $query = "
-        SELECT i.*, c.name as client_name
+        SELECT i.*, 
+        c.name as client_name,
+        c.email as client_email
         FROM invoices i
         JOIN clients c ON i.client_id = c.id
         WHERE i.user_id = ?
@@ -54,7 +57,10 @@ elseif ($method === 'GET' && $id) {
 
     $stmt = $pdo->prepare(
         "
-        SELECT i.*, c.name as client_name, c.email as client_email
+        SELECT i.*, 
+        c.name as client_name, 
+        c.company as client_company,
+        c.email as client_email
         FROM invoices i
         JOIN clients c ON i.client_id = c.id
         WHERE i.id = ? AND i.user_id = ?
@@ -116,17 +122,17 @@ elseif ($method === 'POST') {
         exit();
     }
 
-    $stmt = $pdo->prepare(
-        "SELECT COUNT(*) as count
-         FROM invoices
-         WHERE user_id = ?"
-    );
+    // $stmt = $pdo->prepare(
+    //     "SELECT COUNT(*) as count
+    //      FROM invoices
+    //      WHERE user_id = ?"
+    // );
 
-    $stmt->execute([$user_id]);
+    // $stmt->execute([$user_id]);
 
-    $count = $stmt->fetch()['count'] + 1;
+    // $count = $stmt->fetch()['count'] + 1;
 
-    $invoice_number = "INV-" . str_pad($count, 4, "0", STR_PAD_LEFT);
+    // $invoice_number = "INV-" . str_pad($count, 4, "0", STR_PAD_LEFT);
 
     $subtotal = 0;
 
@@ -162,7 +168,8 @@ elseif ($method === 'POST') {
     $stmt->execute([
         $user_id,
         $client_id,
-        $invoice_number,
+        // $invoice_number,
+        'TEMP',
         $issue_date,
         $due_date,
         $status,
@@ -173,6 +180,25 @@ elseif ($method === 'POST') {
     ]);
 
     $invoice_id = $pdo->lastInsertId();
+
+    //ADDING THIS BLOCK NEWLY
+    $invoice_number =
+    "INV-" .
+    str_pad($invoice_id, 4, "0", STR_PAD_LEFT);
+
+$stmtUpdate = $pdo->prepare(
+"
+UPDATE invoices
+SET invoice_number = ?
+WHERE id = ?
+"
+);
+
+$stmtUpdate->execute([
+    $invoice_number,
+    $invoice_id
+]);
+
 
     foreach ($items as $item) {
 
@@ -246,11 +272,56 @@ elseif ($method === 'PUT' && $id) {
     ]);
 }
 
+// elseif ($method === 'DELETE' && $id) {
+
+//     $stmt = $pdo->prepare(
+//         "DELETE FROM invoices
+//          WHERE id = ? AND user_id = ?"
+//     );
+
+//     $stmt->execute([
+//         $id,
+//         $user_id
+//     ]);
+
+//     echo json_encode([
+//         "message" => "Invoice deleted successfully."
+//     ]);
+// }
+
+//ADDED THIS INSTEAD OF THE COMMENED BLOCK ABOVE
 elseif ($method === 'DELETE' && $id) {
 
+    // Check if invoice has payments
+
     $stmt = $pdo->prepare(
-        "DELETE FROM invoices
-         WHERE id = ? AND user_id = ?"
+        "
+        SELECT COUNT(*) AS payment_count
+        FROM payments
+        WHERE invoice_id = ?
+        "
+    );
+
+    $stmt->execute([$id]);
+
+    $result = $stmt->fetch();
+
+    if ($result['payment_count'] > 0) {
+
+        http_response_code(400);
+
+        echo json_encode([
+            "error" => "Cannot delete invoice because payment records exist."
+        ]);
+
+        exit();
+    }
+
+    $stmt = $pdo->prepare(
+        "
+        DELETE FROM invoices
+        WHERE id = ? AND user_id = ?
+        "
     );
 
     $stmt->execute([

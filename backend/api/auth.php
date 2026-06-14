@@ -1,12 +1,15 @@
 <?php
-header("Access-Control-Allow-Origin: https://small-business-invoice-billing-port.vercel.app");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
+// header("Access-Control-Allow-Origin: https://small-business-invoice-billing-port.vercel.app");
+// header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+// header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
+// if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+//     http_response_code(200);
+//     exit();
+// }
+header("Access-Control-Allow-Origin: http://localhost:3000");
+header("Access-Control-Allow-Credentials: true");
+
 require_once '../config/db.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -22,6 +25,23 @@ if ($method === 'POST' && $action === 'register') {
     $password = $data['password'] ?? '';
     $business_name = trim($data['business_name'] ?? '');
 
+    //Strong Password Policy
+    if (
+    strlen($password) < 8 ||
+    !preg_match('/[A-Z]/', $password) ||
+    !preg_match('/[a-z]/', $password) ||
+    !preg_match('/[0-9]/', $password)
+) {
+
+    http_response_code(400);
+
+    echo json_encode([
+        "error" =>
+        "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, and one number."
+    ]);
+
+    exit();
+}
     if (!$name || !$email || !$password) {
 
         http_response_code(400);
@@ -106,8 +126,10 @@ elseif ($method === 'POST' && $action === 'login') {
         exit();
     }
 
+    session_regenerate_id(true);
     $_SESSION['user_id'] = $user['id'];
-
+    $_SESSION['last_activity'] = time();
+    
     unset($user['password']);
 
     echo json_encode([
