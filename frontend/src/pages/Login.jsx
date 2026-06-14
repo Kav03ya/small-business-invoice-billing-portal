@@ -60,13 +60,26 @@ export default function Login() {
 
       <div className="bg-white rounded-2xl shadow-lg p-10 w-full max-w-md">
 
-        <h1 className="text-3xl font-bold text-primary mb-1">
-          Welcome Back
-        </h1>
 
-        <p className="text-gray-500 mb-6 text-sm">
-          Login to your Invoice Portal
-        </p>
+        <div className="text-center mb-8">
+
+          <h1 className="text-4xl font-extrabold text-primary mb-2">
+            Invoice Portal
+          </h1>
+
+          <p className="text-gray-500 text-sm mb-6">
+            Simplifying Client, Invoice and Payment Management
+          </p>
+
+          <h2 className="text-2xl font-bold text-primary mb-1">
+            Welcome Back
+          </h2>
+
+          <p className="text-gray-500 text-sm">
+            Login to continue
+          </p>
+
+        </div>
 
         {error && (
 

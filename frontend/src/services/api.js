@@ -1,7 +1,37 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://invoiceportalapp.infinityfreeapp.com/backend/api',
+  baseURL: 'http://localhost:8080/invoice-portal/backend/api',
+  withCredentials: true,
 });
 
+let sessionExpired = false;
+
+api.interceptors.response.use(
+  (response) => response,
+
+  (error) => {
+
+    const url = error.config?.url || '';
+
+    if (
+      error.response?.status === 401 &&
+      !url.includes('auth.php?action=login') &&
+      !sessionExpired
+    ) {
+
+      sessionExpired = true;
+
+      alert(
+        'Your session has expired. Please login again.'
+      );
+
+      localStorage.removeItem('user');
+
+      window.location.href = '/login';
+    }
+
+    return Promise.reject(error);
+  }
+);
 export default api;

@@ -68,13 +68,25 @@ export default function Register() {
 
       <div className="bg-white rounded-2xl shadow-lg p-10 w-full max-w-md">
 
-        <h1 className="text-3xl font-bold text-primary mb-1">
-          Create Account
-        </h1>
+        <div className="text-center mb-8">
 
-        <p className="text-gray-500 mb-6 text-sm">
-          Start managing your invoices today
-        </p>
+          <h1 className="text-4xl font-extrabold text-primary mb-2">
+            Invoice Portal
+          </h1>
+
+          <p className="text-gray-500 text-sm mb-6">
+            Simplifying Client, Invoice and Payment Management
+          </p>
+
+          <h2 className="text-2xl font-bold text-primary mb-1">
+            Create Account
+          </h2>
+
+          <p className="text-gray-500 text-sm">
+            Start managing your invoices today
+          </p>
+
+        </div>
 
         {error && (
 
@@ -98,7 +110,7 @@ export default function Register() {
           <div>
 
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Full Name
+              Full Name <span className="text-red-500">*</span>
             </label>
 
             <input
@@ -116,7 +128,7 @@ export default function Register() {
           <div>
 
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
+              Email<span className="text-red-500">*</span>
             </label>
 
             <input
@@ -134,7 +146,7 @@ export default function Register() {
           <div>
 
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
+              Password<span className="text-red-500">*</span>
             </label>
 
             <input
@@ -146,6 +158,10 @@ export default function Register() {
               placeholder="password"
               className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Password must contain at least 8 characters, one uppercase letter,
+              one lowercase letter, and one number.
+            </p>
 
           </div>
 

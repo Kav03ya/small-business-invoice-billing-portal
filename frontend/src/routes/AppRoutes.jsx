@@ -14,6 +14,8 @@ import Clients from '../pages/Clients';
 import Invoices from '../pages/Invoices';
 import CreateInvoice from '../pages/CreateInvoice';
 import InvoiceDetail from '../pages/InvoiceDetail';
+import ClientDetail from '../pages/ClientDetail';
+import ChangePassword from '../pages/ChangePassword';
 
 function PrivateRoute({ children }) {
 
@@ -60,6 +62,15 @@ export default function AppRoutes() {
         />
 
         <Route
+          path="/clients/:id"
+          element={
+            <PrivateRoute>
+              <ClientDetail />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
           path="/invoices"
           element={
             <PrivateRoute>
@@ -85,7 +96,14 @@ export default function AppRoutes() {
             </PrivateRoute>
           }
         />
-
+        <Route
+          path="/change-password"
+          element={
+            <PrivateRoute>
+              <ChangePassword />
+            </PrivateRoute>
+          }
+        />
       </Routes>
 
     </BrowserRouter>

@@ -8,3 +8,6 @@ export const login = (data) =>
 
 export const logout = () =>
   api.post('/auth.php?action=logout');
+
+export const changePassword = (data) =>
+  api.post('/change_password.php', data);

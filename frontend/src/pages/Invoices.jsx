@@ -17,6 +17,8 @@ export default function Invoices() {
 
   const [status, setStatus] = useState('');
 
+  const [searchTerm, setSearchTerm] = useState('');
+
   useEffect(() => {
 
     loadInvoices();
@@ -51,7 +53,10 @@ export default function Invoices() {
 
     } catch (err) {
 
-      console.error(err);
+      alert(
+        err.response?.data?.error ||
+        'Failed to delete invoice.'
+      );
     }
   };
 
@@ -75,12 +80,24 @@ export default function Invoices() {
     };
   });
 
-  // Filter logic
-  const filteredInvoices = status
-    ? processedInvoices.filter(
-        (invoice) => invoice.computedStatus === status
-      )
-    : processedInvoices;
+  // Status + Search Filter
+  const filteredInvoices = processedInvoices.filter((invoice) => {
+
+    const matchesStatus =
+      !status ||
+      invoice.computedStatus === status;
+
+    const matchesSearch =
+      invoice.invoice_number
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+
+      invoice.client_name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+
+    return matchesStatus && matchesSearch;
+  });
 
   return (
 
@@ -107,7 +124,15 @@ export default function Invoices() {
 
         <div className="bg-white rounded-2xl shadow p-6">
 
-          <div className="mb-6">
+          <div className="mb-6 flex flex-col md:flex-row gap-4">
+
+            <input
+              type="text"
+              placeholder="Search by Invoice Number or Client Name"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="border rounded-lg px-4 py-2 w-full md:w-96"
+            />
 
             <select
               value={status}
@@ -177,58 +202,75 @@ export default function Invoices() {
 
               <tbody>
 
-                {filteredInvoices.map((invoice) => (
+                {filteredInvoices.length > 0 ? (
 
-                  <tr
-                    key={invoice.id}
-                    className="border-b hover:bg-gray-50"
-                  >
+                  filteredInvoices.map((invoice) => (
 
-                    <td className="py-3 font-medium">
-                      {invoice.invoice_number}
-                    </td>
+                    <tr
+                      key={invoice.id}
+                      className="border-b hover:bg-gray-50"
+                    >
 
-                    <td className="py-3">
-                      {invoice.client_name}
-                    </td>
+                      <td className="py-3 font-medium">
+                        {invoice.invoice_number}
+                      </td>
 
-                    <td className="py-3">
-                      ₹ {invoice.total}
-                    </td>
+                      <td className="py-3">
+                        {invoice.client_name}
+                      </td>
 
-                    <td className="py-3">
-                      {invoice.due_date}
-                    </td>
+                      <td className="py-3">
+                        ₹ {invoice.total}
+                      </td>
 
-                    <td className="py-3">
+                      <td className="py-3">
+                        {invoice.due_date}
+                      </td>
 
-                      <StatusBadge
-                        status={invoice.computedStatus}
-                      />
+                      <td className="py-3">
 
-                    </td>
+                        <StatusBadge
+                          status={invoice.computedStatus}
+                        />
 
-                    <td className="py-3 flex gap-4">
+                      </td>
 
-                      <Link
-                        to={`/invoices/${invoice.id}`}
-                        className="text-blue-600 hover:underline"
-                      >
-                        View
-                      </Link>
+                      <td className="py-3 flex gap-4">
 
-                      <button
-                        onClick={() => handleDelete(invoice.id)}
-                        className="text-red-600 hover:underline"
-                      >
-                        Delete
-                      </button>
+                        <Link
+                          to={`/invoices/${invoice.id}`}
+                          className="text-blue-600 hover:underline"
+                        >
+                          View
+                        </Link>
 
+                        <button
+                          onClick={() => handleDelete(invoice.id)}
+                          className="text-red-600 hover:underline"
+                        >
+                          Delete
+                        </button>
+
+                      </td>
+
+                    </tr>
+
+                  ))
+
+                ) : (
+
+                  <tr>
+
+                    <td
+                      colSpan="6"
+                      className="text-center py-6 text-gray-500"
+                    >
+                      No invoices found.
                     </td>
 
                   </tr>
 
-                ))}
+                )}
 
               </tbody>
 

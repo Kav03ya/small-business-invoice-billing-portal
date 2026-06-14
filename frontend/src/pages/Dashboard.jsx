@@ -12,8 +12,10 @@ import {
   Cell,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
+  // BarChart,
+  // Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -26,17 +28,29 @@ export default function Dashboard() {
 
   const [loading, setLoading] = useState(true);
 
+  //Adding this for better revenue dispay (last 30 dyas, 6 months, 1 year)
+  const [period, setPeriod] = useState('6months');
+
+  // useEffect(() => {
+
+  //   loadDashboard();
+
+  // }, []);
+
+  //Adding this for better revenue dispay (last 30 dyas, 6 months, 1 year)
   useEffect(() => {
 
     loadDashboard();
 
-  }, []);
+  }, [period]);
 
   const loadDashboard = async () => {
 
     try {
 
-      const res = await getDashboard();
+      // const res = await getDashboard();
+      //Adding this for revenue (last 30 days, 6 months, 1 year)
+      const res = await getDashboard(period);
 
       setData(res.data);
 
@@ -69,17 +83,67 @@ export default function Dashboard() {
       value: parseFloat(data?.pending || 0)
     }
   ];
+  const collectionRate =
+    (
+      (parseFloat(data?.revenue || 0) /
+        (
+          parseFloat(data?.revenue || 0)
+          +
+          parseFloat(data?.pending || 0)
+        )
+      ) * 100
+    ) || 0;
+  // const clientData = [
+  //   {
+  //     name: 'Clients',
+  //     count: parseInt(data?.total_clients || 0)
+  //   },
+  //   {
+  //     name: 'Overdue',
+  //     count: parseInt(data?.overdue_count || 0)
+  //   }
+  // ];
 
-  const clientData = [
-    {
-      name: 'Clients',
-      count: parseInt(data?.total_clients || 0)
-    },
-    {
-      name: 'Overdue',
-      count: parseInt(data?.overdue_count || 0)
+  //Added for monthly revenue line chart
+  const revenueTrendData = (() => {
+
+    const months = [];
+
+    for (let i = 5; i >= 0; i--) {
+
+      const date = new Date();
+
+      date.setMonth(date.getMonth() - i);
+
+      const monthLabel =
+        date.toLocaleString('default', {
+          month: 'short'
+        }) +
+        ' ' +
+        date.getFullYear();
+
+      months.push({
+        month: monthLabel,
+        revenue: 0
+      });
     }
-  ];
+
+    data?.monthly_revenue?.forEach((item) => {
+
+      const existing = months.find(
+        (m) => m.month === item.month
+      );
+
+      if (existing) {
+
+        existing.revenue =
+          parseFloat(item.revenue);
+      }
+    });
+
+    return months;
+
+  })();
 
   const COLORS = ['#2563eb', '#f59e0b'];
 
@@ -101,9 +165,38 @@ export default function Dashboard() {
 
           <div className="bg-white rounded-2xl shadow p-6">
 
-            <p className="text-sm text-gray-500 mb-2">
+            {/* <p className="text-sm text-gray-500 mb-2">
               Total Revenue
-            </p>
+            </p> */}
+
+            {/* Drop down in Total revenue card, for last 30 days/ 6 months/ 1 year revenue */}
+            <div className="flex justify-between items-center mb-2">
+
+              <p className="text-sm text-gray-500">
+                Revenue Collected
+              </p>
+
+              <select
+                value={period}
+                onChange={(e) => setPeriod(e.target.value)}
+                className="text-xs border rounded px-2 py-1"
+              >
+
+                <option value="30days">
+                  Last 30 Days
+                </option>
+
+                <option value="6months">
+                  Last 6 Months
+                </option>
+
+                <option value="12months">
+                  Last 12 Months
+                </option>
+
+              </select>
+
+            </div>
 
             <h2 className="text-3xl font-bold text-green-600">
               ₹ {data?.revenue || 0}
@@ -165,18 +258,19 @@ export default function Dashboard() {
               parseFloat(data?.revenue || 0) > 30000 ? (
 
                 <p>
-                  📈 Revenue realization performance remains healthy with
+                  📈 Revenue collection performance remains healthy with
                   {' '}
                   ₹ {data?.revenue}
                   {' '}
-                  successfully collected from completed invoices.
+                  collected during the selected reporting period.
                 </p>
 
               ) : (
 
                 <p>
-                  📊 Revenue collection is currently moderate and may improve
-                  with stronger invoice conversion and payment follow-up.
+                  📊 Revenue collection during the selected reporting period
+                  is currently moderate and may improve with stronger client
+                  payment follow-up.
                 </p>
               )
             }
@@ -261,9 +355,24 @@ export default function Dashboard() {
 
           <div className="bg-white rounded-2xl shadow p-6">
 
-            <h2 className="text-xl font-bold text-primary mb-6">
-              Revenue vs Pending
-            </h2>
+            <div className="mb-6">
+
+              <h2 className="text-xl font-bold text-primary">
+                Revenue vs Pending
+              </h2>
+
+              <p
+                className={`inline-block px-3 py-1 rounded-full text-sm font-medium mt-2 ${collectionRate >= 80
+                    ? 'bg-green-100 text-green-700'
+                    : collectionRate >= 60
+                      ? 'bg-yellow-100 text-yellow-700'
+                      : 'bg-red-100 text-red-700'
+                  }`}
+              >
+                Collection Rate: {collectionRate.toFixed(1)}%
+              </p>
+
+            </div>
 
             <ResponsiveContainer width="100%" height={300}>
 
@@ -297,8 +406,8 @@ export default function Dashboard() {
             </ResponsiveContainer>
 
           </div>
-
-          {/* Bar Chart */}
+          {/* 
+          Bar Chart
 
           <div className="bg-white rounded-2xl shadow p-6">
 
@@ -325,6 +434,80 @@ export default function Dashboard() {
               </BarChart>
 
             </ResponsiveContainer>
+
+          </div> */}
+
+          {/* Revenue Trend Chart */}
+
+          <div className="bg-white rounded-2xl shadow p-6">
+
+            <h2 className="text-xl font-bold text-primary mb-6">
+              Revenue Collection Trend (Last 6 Months)
+            </h2>
+
+            <ResponsiveContainer width="100%" height={300}>
+
+              <LineChart data={revenueTrendData}>
+
+                <CartesianGrid strokeDasharray="3 3" />
+
+                <XAxis dataKey="month" />
+
+                <YAxis />
+
+                <Tooltip />
+
+                <Legend />
+
+                <Line
+                  type="linear"
+                  dataKey="revenue"
+                  stroke="#1B6CA8"
+                  strokeWidth={3}
+                />
+
+              </LineChart>
+
+            </ResponsiveContainer>
+
+          </div>
+
+        </div>
+
+        <div className="bg-white rounded-2xl shadow p-6 mb-10">
+
+          <h2 className="text-xl font-bold text-primary mb-4">
+            Top Clients by Revenue
+          </h2>
+
+          <div className="space-y-3">
+
+            {data?.top_clients?.map((client, index) => (
+
+              <div
+                key={index}
+                className="flex justify-between items-center border-b pb-3"
+              >
+
+                <div>
+
+                  <p className="font-semibold">
+                    {client.name}
+                  </p>
+
+                  <p className="text-sm text-gray-500">
+                    {client.company}
+                  </p>
+
+                </div>
+
+                <p className="font-bold text-green-600">
+                  ₹ {parseFloat(client.revenue).toFixed(2)}
+                </p>
+
+              </div>
+
+            ))}
 
           </div>
 

@@ -50,6 +50,13 @@ export default function Navbar() {
         </Link>
 
         <Link
+          to="/change-password"
+          className="hover:text-blue-200 transition"
+        >
+          Change Password
+        </Link>
+
+        <Link
           to="/invoices/new"
           className="bg-white text-primary px-3 py-1 rounded-full hover:bg-blue-100 transition"
         >

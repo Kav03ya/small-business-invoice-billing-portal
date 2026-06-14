@@ -134,7 +134,7 @@ export default function CreateInvoice() {
         );
 
         await axios.post(
-          'https://invoiceportalapp.infinityfreeapp.com/backend/api/send_invoice_email.php',
+          'http://localhost:8080/invoice-portal/backend/api/send_invoice_email.php',
           {
             client_email: selectedClient.email,
             client_name: selectedClient.name,
@@ -142,6 +142,9 @@ export default function CreateInvoice() {
             issue_date: form.issue_date,
             due_date: form.due_date,
             total: total.toFixed(2)
+          },
+          {
+            withCredentials: true
           }
         );
       }
@@ -197,7 +200,7 @@ export default function CreateInvoice() {
                     key={client.id}
                     value={client.id}
                   >
-                    {client.name}
+                    {client.name} ({client.company})
                   </option>
 
                 ))}

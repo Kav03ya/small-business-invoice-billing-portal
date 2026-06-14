@@ -6,11 +6,19 @@ import Navbar from '../components/Navbar';
 
 import StatusBadge from '../components/StatusBadge';
 
+// import {
+//   getInvoice,
+//   updateInvoice,
+//   getPayments,
+//   recordPayment
+// } from '../services/invoiceService';
+//Added below block for overdue invoice email reminder feature
 import {
   getInvoice,
   updateInvoice,
   getPayments,
-  recordPayment
+  recordPayment,
+  sendReminderEmail
 } from '../services/invoiceService';
 
 import jsPDF from 'jspdf';
@@ -102,12 +110,48 @@ export default function InvoiceDetail() {
 
     } catch (err) {
 
-      console.error(err);
+      // alert(
+      //   err.response?.data?.error ||
+      //   'Failed to record payment.'
+      // );
+      console.log(err.response?.data);
+
+      alert(
+        JSON.stringify(err.response?.data)
+      );
+    }
+  };
+
+  //Added this block of code for overdue invoice email reminder feature
+  const handleReminderEmail = async () => {
+
+    try {
+
+      await sendReminderEmail({
+
+        client_name: invoice.client_name,
+
+        client_email: invoice.client_email,
+
+        invoice_number: invoice.invoice_number,
+
+        due_date: invoice.due_date,
+
+        total: invoice.total
+      });
+
+      alert('Reminder email sent successfully.');
+
+    } catch (err) {
+
+      alert(
+        err.response?.data?.error ||
+        'Failed to send reminder email.'
+      );
     }
   };
 
   if (!invoice) {
-
     return (
       <div className="p-10">
         Loading...
@@ -336,7 +380,13 @@ export default function InvoiceDetail() {
     // Save PDF
     pdf.save(`${invoice.invoice_number}.pdf`);
   };
+  //console.log(invoice);
 
+  //Added this for payment progress bar
+  const paymentPercentage =
+    invoice.total > 0
+      ? (totalPaid / parseFloat(invoice.total)) * 100
+      : 0;
   return (
 
     <div className="min-h-screen bg-light">
@@ -356,7 +406,8 @@ export default function InvoiceDetail() {
               </h1>
 
               <p className="text-gray-500">
-                {invoice.client_name}
+                {/* Added compant name in bracket to differenciate 2 clients with same name */}
+                {invoice.client_name} ({invoice.client_company})
               </p>
 
             </div>
@@ -370,8 +421,31 @@ export default function InvoiceDetail() {
                 Download PDF
               </button>
 
+              {/* Added this for overdue invoice email reminder feature */}
+              {
+                (
+                  new Date(invoice.due_date) < new Date() &&
+                  invoice.status !== 'Paid'
+                ) && (
+
+                  <button
+                    onClick={handleReminderEmail}
+                    className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition"
+                  >
+                    Send Reminder
+                  </button>
+
+                )
+              }
               <StatusBadge
-                status={invoice.status}
+                status={
+                  (
+                    new Date(invoice.due_date) < new Date() &&
+                    invoice.status !== 'Paid'
+                  )
+                    ? 'Overdue'
+                    : invoice.status
+                }
               />
 
             </div>
@@ -536,7 +610,73 @@ export default function InvoiceDetail() {
             Payment Summary
           </h2>
 
-          <div className="grid grid-cols-3 gap-6 mb-8">
+          {/* <div className="grid grid-cols-3 gap-6 mb-8"> */}
+          {/* <div className="grid grid-cols-2 gap-6 mb-6">
+
+            <div>
+
+              <p className="text-sm text-gray-500">
+                Total Paid
+              </p>
+
+              <p className="text-2xl font-bold text-green-600">
+                INR {totalPaid.toFixed(2)}
+              </p>
+
+            </div>
+
+            <div>
+
+              <div className="mb-8">
+
+                <div className="flex justify-between mb-2">
+
+                  <span className="text-sm font-medium text-gray-700">
+                    Payment Progress
+                  </span>
+
+                  <span className="text-sm font-medium text-gray-700">
+                    {paymentPercentage.toFixed(0)}%
+                  </span>
+
+                </div>
+
+                <div className="w-full bg-gray-200 rounded-full h-4">
+
+                  <div
+                    className="bg-green-500 h-4 rounded-full transition-all duration-500"
+                    style={{
+                      width: `${Math.min(paymentPercentage, 100)}%`
+                    }}
+                  />
+
+                </div>
+
+                <p className="text-sm text-gray-500 mt-2">
+
+                  Paid INR {totalPaid.toFixed(2)}
+                  {' '}
+                  of
+                  {' '}
+                  INR {parseFloat(invoice.total).toFixed(2)}
+
+                </p>
+
+              </div>
+
+              <p className="text-sm text-gray-500">
+                Balance
+              </p>
+
+              <p className="text-2xl font-bold text-red-600">
+                INR {balance.toFixed(2)}
+              </p>
+
+            </div>
+
+          </div> */}
+
+          <div className="grid grid-cols-2 gap-6 mb-6">
 
             <div>
 
@@ -564,6 +704,43 @@ export default function InvoiceDetail() {
 
           </div>
 
+          <div className="mb-8">
+
+            <div className="flex justify-between mb-2">
+
+              <span className="text-sm font-medium text-gray-700">
+                Payment Progress
+              </span>
+
+              <span className="text-sm font-medium text-gray-700">
+                {paymentPercentage.toFixed(0)}%
+              </span>
+
+            </div>
+
+            <div className="w-full bg-gray-200 rounded-full h-4">
+
+              <div
+                className="bg-green-500 h-4 rounded-full transition-all duration-500"
+                style={{
+                  width: `${Math.min(paymentPercentage, 100)}%`
+                }}
+              />
+
+            </div>
+
+            <p className="text-sm text-gray-500 mt-2">
+
+              Paid INR {totalPaid.toFixed(2)}
+              {' '}
+              of
+              {' '}
+              INR {parseFloat(invoice.total).toFixed(2)}
+
+            </p>
+
+          </div>
+
           <form
             onSubmit={handlePaymentSubmit}
             className="grid grid-cols-1 md:grid-cols-4 gap-4"
@@ -579,12 +756,23 @@ export default function InvoiceDetail() {
               className="border rounded-lg px-4 py-2"
             />
 
+            {/* <input
+              type="date"
+              name="payment_date"
+              value={paymentForm.payment_date}
+              onChange={handlePaymentChange}
+              required
+              className="border rounded-lg px-4 py-2"
+            /> */}
+
+            {/* ADDED RESTRICTION ON CHOOSING DATE */}
             <input
               type="date"
               name="payment_date"
               value={paymentForm.payment_date}
               onChange={handlePaymentChange}
               required
+              max={new Date().toLocaleDateString('en-CA')}
               className="border rounded-lg px-4 py-2"
             />
 
