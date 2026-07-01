@@ -1,1 +1,2 @@
 backend/config/mail.php
+backend/config/db_credentials.php

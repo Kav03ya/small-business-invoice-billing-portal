@@ -11,11 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
-
-$host = "localhost";
-$dbname = "invoice_portal";
-$username = "root";
-$password = "";
+require_once 'db_credentials.php';
 
 try {
     $pdo = new PDO(
