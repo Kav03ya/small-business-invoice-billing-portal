@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080/invoice-portal/backend/api',
+  // baseURL: 'http://localhost:8080/invoice-portal/backend/api',
+  baseURL: 'https://invoiceportal.alwaysdata.net/api',
   withCredentials: true,
 });
 
