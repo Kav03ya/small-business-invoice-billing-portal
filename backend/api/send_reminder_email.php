@@ -1,20 +1,20 @@
 <?php
 
-header("Access-Control-Allow-Origin: http://localhost:3000");
-//header("Access-Control-Allow-Origin: https://small-business-invoice-billing-port.vercel.app");
+// header("Access-Control-Allow-Origin: http://localhost:3000");
+// //header("Access-Control-Allow-Origin: https://small-business-invoice-billing-port.vercel.app");
 
-header("Access-Control-Allow-Credentials: true");
+// header("Access-Control-Allow-Credentials: true");
 
-header("Access-Control-Allow-Headers: Content-Type");
+// header("Access-Control-Allow-Headers: Content-Type");
 
-header("Content-Type: application/json");
+// header("Content-Type: application/json");
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+// if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
-    header("Access-Control-Allow-Methods: POST, OPTIONS");
+//     header("Access-Control-Allow-Methods: POST, OPTIONS");
 
-    exit(0);
-}
+//     exit(0);
+// }
 
 // session_start();
 
@@ -26,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 //     exit;
 // }
+require_once '../config/cors.php';
 require_once '../config/session_check.php';
 
 use PHPMailer\PHPMailer\PHPMailer;

@@ -1,9 +1,9 @@
 <?php
 
-header("Access-Control-Allow-Origin: http://localhost:3000");
-//header("Access-Control-Allow-Origin: https://small-business-invoice-billing-port.vercel.app");
-header("Access-Control-Allow-Credentials: true");
-header("Content-Type: application/json");
+// header("Access-Control-Allow-Origin: http://localhost:3000");
+// //header("Access-Control-Allow-Origin: https://small-business-invoice-billing-port.vercel.app");
+// header("Access-Control-Allow-Credentials: true");
+// header("Content-Type: application/json");
 
 // session_start();
 
@@ -15,6 +15,7 @@ header("Content-Type: application/json");
 
 //     exit;
 // }
+require_once '../config/cors.php';
 require_once '../config/db.php';
 require_once '../config/session_check.php';
 

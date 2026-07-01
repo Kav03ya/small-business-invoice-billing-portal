@@ -7,9 +7,9 @@
 //     http_response_code(200);
 //     exit();
 // }
-header("Access-Control-Allow-Origin: http://localhost:3000");
-header("Access-Control-Allow-Credentials: true");
-
+// header("Access-Control-Allow-Origin: http://localhost:3000");
+// header("Access-Control-Allow-Credentials: true");
+require_once '../config/cors.php';
 require_once '../config/db.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
