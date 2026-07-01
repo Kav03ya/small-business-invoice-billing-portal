@@ -186,7 +186,7 @@ export default function InvoiceDetail() {
 
     pdf.text('Bangalore, Karnataka, India', 20, 34);
 
-    pdf.text('Email: support@invoiceportal.com', 20, 40);
+    pdf.text('Email: smallbiz.invoice.portal@gmail.com', 20, 40);
 
     // Invoice Heading
     pdf.setFontSize(18);
