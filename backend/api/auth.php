@@ -90,6 +90,13 @@ if ($method === 'POST' && $action === 'register') {
 
 elseif ($method === 'POST' && $action === 'login') {
 
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'secure' => true,
+    'httponly' => true,
+    'samesite' => 'None'
+]);
     session_start();
 
     $data = json_decode(file_get_contents("php://input"), true);
@@ -139,6 +146,14 @@ elseif ($method === 'POST' && $action === 'login') {
 }
 
 elseif ($method === 'POST' && $action === 'logout') {
+
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'secure' => true,
+    'httponly' => true,
+    'samesite' => 'None'
+]);
 
     session_start();
 
